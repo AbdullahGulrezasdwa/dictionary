@@ -1,42 +1,78 @@
+// ===============================
+// Load all dictionary JSON files
+// ===============================
+
 let data = [];
 
-// Load dictionary
-fetch('dictionary.json')
-  .then(response => response.json())
-  .then(json => data = json);
+// List of dictionary files
+const files = [
+  'words-1.json','words-2.json','words-3.json','words-4.json','words-5.json',
+  'words-6.json','words-7.json','words-8.json','words-9.json','words-10.json',
+  'words-11.json','words-12.json','words-13.json','words-14.json','words-15.json',
+  'words-16.json','words-17.json','words-18.json','words-19.json','words-20.json'
+];
 
-// Normalize Arabic text
-function normalizeArabic(text) {
-  return text
-    .replace(/[أإآ]/g, "ا")
-    .replace(/ة/g, "ه")
-    .replace(/[ًٌٍَُِّ]/g, "") // remove tashkeel
-    .trim()
-    .toLowerCase();
-}
+// Load all files and merge into one array
+Promise.all(files.map(file => fetch(file).then(r => r.json())))
+  .then(all => {
+    all.forEach(list => data.push(...list));
+    console.log("Dictionary loaded:", data.length, "entries");
+  })
+  .catch(err => console.error("Error loading dictionary:", err));
 
-document.getElementById('search').addEventListener('input', function () {
-  let input = normalizeArabic(this.value);
-  let direction = document.getElementById('direction').value;
-  let result = document.getElementById('result');
-  result.innerHTML = "";
 
-  if (input === "") return;
+// ===============================
+// Search Function
+// ===============================
 
-  for (let word of data) {
-    let ar = normalizeArabic(word.arabic);
-    let en = word.english.toLowerCase();
+function searchWord() {
+  const query = document.getElementById("searchInput").value.trim();
 
-    if (direction === "ar-en" && ar === input) {
-      result.innerHTML = `${word.arabic} — ${word.english}`;
-      return;
-    }
-
-    if (direction === "en-ar" && en === input) {
-      result.innerHTML = `${word.english} — ${word.arabic}`;
-      return;
-    }
+  if (query === "") {
+    document.getElementById("result").innerHTML = "";
+    return;
   }
 
-  result.innerHTML = "Not found";
-});
+  // Normalize Arabic input
+  const normalizedQuery = query
+    .replace(/أ|إ|آ/g, "ا")
+    .replace(/ة/g, "ه")
+    .replace(/ى/g, "ي");
+
+  // Search in the dictionary
+  const results = data.filter(entry => {
+    const normalizedArabic = entry.arabic
+      .replace(/أ|إ|آ/g, "ا")
+      .replace(/ة/g, "ه")
+      .replace(/ى/g, "ي");
+
+    return (
+      normalizedArabic.includes(normalizedQuery) ||
+      entry.english.some(e => e.toLowerCase().includes(query.toLowerCase()))
+    );
+  });
+
+  // Display results
+  if (results.length === 0) {
+    document.getElementById("result").innerHTML = "<p>No results found.</p>";
+    return;
+  }
+
+  let html = "";
+  results.forEach(entry => {
+    html += `
+      <div class="word-box">
+        <p><strong>${entry.arabic}</strong> — ${entry.english.join(", ")}</p>
+      </div>
+    `;
+  });
+
+  document.getElementById("result").innerHTML = html;
+}
+
+
+// ===============================
+// Trigger search on typing
+// ===============================
+
+document.getElementById("searchInput").addEventListener("input", searchWord);
