@@ -8,8 +8,8 @@ body {
   align-items: center;
 
   /* Background image */
-  background-image: url("your-image.jpg");
-  background-size: cover;        /* Make it fill the screen */
-  background-position: center;   /* Center the image */
-  background-attachment: fixed;  /* Parallax effect */
+  background-image: url("background.jpg");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
 }
