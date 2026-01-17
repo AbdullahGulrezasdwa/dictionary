@@ -1,13 +1,22 @@
-const files = Array.from({ length: 20 }, (_, i) => `words-${i + 1}.json`);
-
+// ===============================
+// Load all JSON dictionary files
+// ===============================
 async function loadAll() {
-  const all = [];
+  const files = [
+    "words-1.json", "words-2.json", "words-3.json", "words-4.json",
+    "words-5.json", "words-6.json", "words-7.json", "words-8.json",
+    "words-9.json", "words-10.json", "words-11.json", "words-12.json",
+    "words-13.json", "words-14.json", "words-15.json", "words-16.json",
+    "words-17.json", "words-18.json", "words-19.json", "words-20.json"
+  ];
+
+  let all = [];
 
   for (const file of files) {
     try {
       const res = await fetch(file);
-      const json = await res.json();
-      all.push(...json);
+      const data = await res.json();
+      all = all.concat(data);
     } catch (err) {
       console.error("Error loading", file, err);
     }
@@ -16,7 +25,11 @@ async function loadAll() {
   return all;
 }
 
+// ===============================
+// Main logic
+// ===============================
 loadAll().then(rawEntries => {
+  // Deduplicate
   const seen = new Set();
   const entries = [];
 
@@ -30,31 +43,59 @@ loadAll().then(rawEntries => {
 
   console.log("Dictionary loaded:", entries.length, "unique entries");
 
-  const search = document.getElementById("search");
-  const results = document.getElementById("results");
+  const searchInput = document.getElementById("search");
+  const resultsDiv = document.getElementById("results");
 
-  search.addEventListener("input", () => {
-    const q = search.value.trim().toLowerCase();
-    results.innerHTML = "";
+  // ===============================
+  // Search function
+  // ===============================
+  function search(query) {
+    query = query.trim().toLowerCase();
+    resultsDiv.innerHTML = "";
 
-    if (!q) return;
+    if (query === "") return;
 
-    const filtered = entries.filter(e => {
-      const arabic = (e.arabic || "").toLowerCase();
-      const english = (e.english || []).map(x => x.toLowerCase()).join(" ");
+    const results = entries.filter(e =>
+      e.arabic.includes(query) ||
+      (e.english && e.english.some(en => en.toLowerCase().includes(query)))
+    );
 
-      return arabic.includes(q) || english.includes(q);
-    });
-
-    if (filtered.length === 0) {
-      results.textContent = "No matches found.";
+    if (results.length === 0) {
+      resultsDiv.innerHTML = `<p class="no-results">No results found.</p>`;
       return;
     }
 
-    filtered.forEach(e => {
-      const div = document.createElement("div");
-      div.textContent = `${e.arabic} — ${e.english.join(", ")}`;
-      results.appendChild(div);
+    results.forEach(e => {
+      const englishList = e.english ? e.english.join(", ") : "No translation";
+      const item = document.createElement("div");
+      item.className = "result-item";
+      item.innerHTML = `
+        <p class="arabic-word">${e.arabic}</p>
+        <p class="english-word">${englishList}</p>
+      `;
+      resultsDiv.appendChild(item);
     });
+  }
+
+  // ===============================
+  // Input listener
+  // ===============================
+  searchInput.addEventListener("input", () => {
+    search(searchInput.value);
   });
+
+});
+
+// ===============================
+// SECRET EASTER EGG (5 clicks)
+// ===============================
+let secretClicks = 0;
+
+document.getElementById("title").addEventListener("click", () => {
+  secretClicks++;
+
+  if (secretClicks === 5) {
+    alert("🎉 You discovered the secret message! 🎉");
+    secretClicks = 0; // reset
+  }
 });
