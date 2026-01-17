@@ -53,6 +53,12 @@ loadAll().then(rawEntries => {
     query = query.trim().toLowerCase();
     resultsDiv.innerHTML = "";
 
+    // SECRET WORD EASTER EGG
+    if (query === "magic") {
+      alert("🎉 You found the secret message! 🎉");
+      return;
+    }
+
     if (query === "") return;
 
     const results = entries.filter(e =>
@@ -84,18 +90,4 @@ loadAll().then(rawEntries => {
     search(searchInput.value);
   });
 
-});
-
-// ===============================
-// SECRET EASTER EGG (5 clicks)
-// ===============================
-let secretClicks = 0;
-
-document.getElementById("title").addEventListener("click", () => {
-  secretClicks++;
-
-  if (secretClicks === 5) {
-    alert("🎉 You discovered the secret message! 🎉");
-    secretClicks = 0; // reset
-  }
 });
