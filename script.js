@@ -1,25 +1,41 @@
-let data = [];
-let seen = new Set();
+const files = Array.from({ length: 20 }, (_, i) => `words-${i + 1}.json`);
 
-const files = [
-  'words-1.json','words-2.json','words-3.json','words-4.json','words-5.json',
-  'words-6.json','words-7.json','words-8.json','words-9.json','words-10.json',
-  'words-11.json','words-12.json','words-13.json','words-14.json','words-15.json',
-  'words-16.json','words-17.json','words-18.json','words-19.json','words-20.json'
-];
+async function loadAll() {
+  const all = [];
 
-Promise.all(files.map(file => fetch(file).then(r => r.json())))
-  .then(all => {
-    all.forEach(list => {
-      list.forEach(entry => {
-        const key = entry.arabic + "|" + entry.english.join(",");
-        if (!seen.has(key)) {
-          seen.add(key);
-          data.push(entry);
-        }
-      });
+  for (const file of files) {
+    try {
+      const res = await fetch(file);
+      const json = await res.json();
+      all.push(...json);
+    } catch (err) {
+      console.error("Error loading", file, err);
+    }
+  }
+
+  return all;
+}
+
+loadAll().then(entries => {
+  console.log("Loaded entries:", entries.length);
+
+  const search = document.getElementById("search");
+  const results = document.getElementById("results");
+
+  search.addEventListener("input", () => {
+    const q = search.value.trim();
+    results.innerHTML = "";
+
+    if (!q) return;
+
+    const filtered = entries.filter(e =>
+      e.word.includes(q) || e.meaning.includes(q)
+    );
+
+    filtered.forEach(e => {
+      const div = document.createElement("div");
+      div.textContent = `${e.word} — ${e.meaning}`;
+      results.appendChild(div);
     });
-
-    console.log("Dictionary loaded:", data.length, "unique entries");
-  })
-  .catch(err => console.error("Error loading dictionary:", err));
+  });
+});
