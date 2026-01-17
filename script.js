@@ -55,7 +55,7 @@ loadAll().then(rawEntries => {
 
     // SECRET WORD EASTER EGG
     if (query === "magic") {
-      alert("🎉 You found the secret message! 🎉");
+      alert("🎉 Made By Abdullah Gulrez Y07B 🎉");
       return;
     }
 
