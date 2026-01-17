@@ -17,7 +17,7 @@ async function loadAll() {
 }
 
 loadAll().then(entries => {
-  console.log("Dictionary loaded:", entries.length, "entries");
+  console.log("Dictionary loaded:", entries.length, "unique entries");
 
   const search = document.getElementById("search");
   const results = document.getElementById("results");
@@ -29,11 +29,16 @@ loadAll().then(entries => {
     if (!q) return;
 
     const filtered = entries.filter(e => {
-      const arabic = e.arabic?.toLowerCase() || "";
-      const english = (e.english || []).join(" ").toLowerCase();
+      const arabic = (e.arabic || "").toLowerCase();
+      const english = (e.english || []).map(x => x.toLowerCase()).join(" ");
 
       return arabic.includes(q) || english.includes(q);
     });
+
+    if (filtered.length === 0) {
+      results.textContent = "No matches found.";
+      return;
+    }
 
     filtered.forEach(e => {
       const div = document.createElement("div");
