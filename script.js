@@ -17,24 +17,27 @@ async function loadAll() {
 }
 
 loadAll().then(entries => {
-  console.log("Loaded entries:", entries.length);
+  console.log("Dictionary loaded:", entries.length, "entries");
 
   const search = document.getElementById("search");
   const results = document.getElementById("results");
 
   search.addEventListener("input", () => {
-    const q = search.value.trim();
+    const q = search.value.trim().toLowerCase();
     results.innerHTML = "";
 
     if (!q) return;
 
-    const filtered = entries.filter(e =>
-      e.word.includes(q) || e.meaning.includes(q)
-    );
+    const filtered = entries.filter(e => {
+      const arabic = e.arabic?.toLowerCase() || "";
+      const english = (e.english || []).join(" ").toLowerCase();
+
+      return arabic.includes(q) || english.includes(q);
+    });
 
     filtered.forEach(e => {
       const div = document.createElement("div");
-      div.textContent = `${e.word} — ${e.meaning}`;
+      div.textContent = `${e.arabic} — ${e.english.join(", ")}`;
       results.appendChild(div);
     });
   });
