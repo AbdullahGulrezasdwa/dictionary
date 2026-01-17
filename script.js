@@ -16,7 +16,18 @@ async function loadAll() {
   return all;
 }
 
-loadAll().then(entries => {
+loadAll().then(rawEntries => {
+  const seen = new Set();
+  const entries = [];
+
+  rawEntries.forEach(e => {
+    const key = `${e.arabic}::${(e.english || []).join(",")}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      entries.push(e);
+    }
+  });
+
   console.log("Dictionary loaded:", entries.length, "unique entries");
 
   const search = document.getElementById("search");
